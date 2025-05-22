@@ -1,3 +1,11 @@
+# Your API key for shubham.mehta@tuhh.de is:
+
+# aMpwwJNk1KNmIl9BNifQPFVXMhFC8wvT50M7HngJ
+
+
+
+
+
 import os
 import sys
 import requests
@@ -67,7 +75,7 @@ def get_skyview_image(ra, dec, folder):
         print(f"Error retrieving SkyView image: {e}")
 
 def get_apod_image(folder):
-    api_key = os.environ.get('NASA_API_KEY')
+    api_key ='aMpwwJNk1KNmIl9BNifQPFVXMhFC8wvT50M7HngJ'
     if not api_key:
         print("NASA_API_KEY not set in environment.")
         return
