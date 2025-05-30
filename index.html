@@ -66,7 +66,7 @@
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     const { latitude, longitude } = position.coords;
-                    output.innerHTML = `🌍 Your Location:<br>Latitude: ${latitude.toFixed(5)}<br>Longitude: ${longitude.toFixed(5)}`;
+                    output.innerHTML = `Your Location:<br>Latitude: ${latitude.toFixed(5)}<br>Longitude: ${longitude.toFixed(5)}`;
                 },
                 (error) => {
                     output.innerText = "Unable to retrieve your location.";
