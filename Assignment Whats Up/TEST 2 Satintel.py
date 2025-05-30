@@ -1,11 +1,3 @@
-# Your API key for shubham.mehta@tuhh.de is:
-
-# aMpwwJNk1KNmIl9BNifQPFVXMhFC8wvT50M7HngJ
-
-
-
-
-
 import os
 import sys
 import requests
@@ -15,9 +7,11 @@ from astropy.coordinates import EarthLocation, AltAz, SkyCoord
 from astropy.time import Time
 import re
 import base64
-
 import astropy.units as u
 
+#GETTING LOCATION
+#Using geocoder to get the location of the user based on their IP address
+#This is a simple way to get the location without needing user input
 def get_location():
     try:
         g = geocoder.ip('me')
@@ -31,6 +25,8 @@ def get_location():
         print(f"Error detecting location: {e}")
         sys.exit(1)
 
+#GETTING ZENITH RA/DEC
+#RA/DEC is the celestial coordinate system equivalent to latitude and longitude on Earth
 def get_zenith_ra_dec(lat, lon):
     try:
         location = EarthLocation(lat=lat*u.deg, lon=lon*u.deg)
@@ -43,6 +39,9 @@ def get_zenith_ra_dec(lat, lon):
         print(f"Error calculating zenith RA/Dec: {e}")
         sys.exit(1)
 
+#GETTING SKYVIEW IMAGE
+#SkyView is a web service that provides access to astronomical images from various surveys
+#This function retrieves an image from the SkyView service based on the RA/Dec coordinates
 def get_skyview_image(ra, dec, folder):
     url = "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl"
     params = {
@@ -74,6 +73,8 @@ def get_skyview_image(ra, dec, folder):
     except Exception as e:
         print(f"Error retrieving SkyView image: {e}")
 
+#GETTING APOD IMAGE
+#APOD (Astronomy Picture of the Day) is a popular astronomy website that features a new image or video every day.
 def get_apod_image(folder):
     api_key ='aMpwwJNk1KNmIl9BNifQPFVXMhFC8wvT50M7HngJ'
     if not api_key:
@@ -100,6 +101,8 @@ def get_apod_image(folder):
     except Exception as e:
         print(f"Error retrieving APOD image: {e}")
 
+#GETTING SENTINEL IMAGE
+#Sentinel Hub is a cloud-based platform for processing satellite data
 def get_sentinel_image(lat, lon, folder):
     creds = os.environ.get('SENTINEL_HUB_CREDENTIALS')
     if not creds:
@@ -149,6 +152,82 @@ def get_sentinel_image(lat, lon, folder):
     except Exception as e:
         print(f"Error retrieving Sentinel image: {e}")
 
+        # GETTING HUBBLE IMAGE
+        # Hubble Legacy Archive provides access to Hubble Space Telescope images
+        def get_hubble_image(ra, dec, folder):
+            try:
+                # Hubble Legacy Archive cutout service (simple JPEG preview)
+                url = "https://hla.stsci.edu/cgi-bin/fitscut.cgi"
+                params = {
+                    "RA": ra,
+                    "DEC": dec,
+                    "size": 60,  # arcsec
+                    "format": "jpg",
+                    "red": "wfpc2_f606w",
+                    "output_size": 512
+                }
+                r = requests.get(url, params=params, timeout=30)
+                if r.ok and r.headers.get('Content-Type', '').startswith('image'):
+                    filename = os.path.join(folder, "hubble_zenith.jpg")
+                    with open(filename, 'wb') as f:
+                        f.write(r.content)
+                    print(f"Hubble image saved as {filename}")
+                else:
+                    print("Hubble image not available for this position.")
+            except Exception as e:
+                print(f"Error retrieving Hubble image: {e}")
+
+        # GETTING SDSS IMAGE
+        # Sloan Digital Sky Survey provides optical images of the sky
+        def get_sdss_image(ra, dec, folder):
+            try:
+                url = "http://skyserver.sdss.org/dr16/SkyServerWS/ImgCutout/getjpeg"
+                params = {
+                    "ra": ra,
+                    "dec": dec,
+                    "scale": 0.4,
+                    "width": 512,
+                    "height": 512
+                }
+                r = requests.get(url, params=params, timeout=30)
+                if r.ok and r.headers.get('Content-Type', '').startswith('image'):
+                    filename = os.path.join(folder, "sdss_zenith.jpg")
+                    with open(filename, 'wb') as f:
+                        f.write(r.content)
+                    print(f"SDSS image saved as {filename}")
+                else:
+                    print("SDSS image not available for this position.")
+            except Exception as e:
+                print(f"Error retrieving SDSS image: {e}")
+
+        # GETTING PAN-STARRS IMAGE
+        # Pan-STARRS provides wide-field images of the sky
+        def get_pan_starrs_image(ra, dec, folder):
+            try:
+                url = "https://ps1images.stsci.edu/cgi-bin/ps1cutouts"
+                params = {
+                    "pos": f"{ra} {dec}",
+                    "filter": "g",
+                    "filetypes": "stack",
+                    "auxiliary": "no",
+                    "size": 512,
+                    "output_size": 512,
+                    "format": "jpeg"
+                }
+                r = requests.get(url, params=params, timeout=30)
+                if r.ok and r.headers.get('Content-Type', '').startswith('image'):
+                    filename = os.path.join(folder, "panstarrs_zenith.jpg")
+                    with open(filename, 'wb') as f:
+                        f.write(r.content)
+                    print(f"Pan-STARRS image saved as {filename}")
+                else:
+                    print("Pan-STARRS image not available for this position.")
+            except Exception as e:
+                print(f"Error retrieving Pan-STARRS image: {e}")
+
+
+
+
 def main():
     lat, lon = get_location()
     print(f"Detected location: lat={lat}, lon={lon}")
@@ -176,6 +255,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
-    
-    #export 
+ 
