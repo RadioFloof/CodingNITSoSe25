@@ -6,7 +6,7 @@ from io import BytesIO
 
 import matplotlib.pyplot as plt
 
-# Step 1: Get User Location
+# Step 1: Get User Location (Working well do not touch  )
 def get_user_location():
     permission = input("Do you allow access to your location? (yes/no): ").strip().lower()
     if permission != 'yes':
@@ -32,9 +32,44 @@ def get_visible_planets(lat, lon):
     planet_keys = {
         'Mercury': 'mercury',
         'Venus': 'venus',
+        'Earth': 'earth',
         'Mars': 'mars',
         'Jupiter': 'jupiter barycenter',
-        'Saturn': 'saturn barycenter'
+        'Saturn': 'saturn barycenter',
+        'Uranus': 'uranus barycenter',
+        'Neptune': 'neptune barycenter',
+        'Pluto': 'pluto barycenter',
+        'Sun': 'sun',
+        'Moon': 'moon',
+        # The following objects are not in de421.bsp and will cause errors if included:
+        # 'Ceres': 'ceres',
+        # 'Pallas': 'pallas',
+        # 'Juno': 'juno',
+        # 'Vesta': 'vesta',
+        # 'Eros': 'eros',
+        # 'Hebe': 'hebe',
+        # 'Iris': 'iris',
+        # 'Flora': 'flora',
+        # 'Metis': 'metis',
+        # 'Hygiea': 'hygiea',
+        # 'Parthenope': 'parthenope',
+        # 'Victoria': 'victoria',
+        # 'Egeria': 'egeria',
+        # 'Irene': 'irene',
+        # 'Eunomia': 'eunomia',
+        # 'Psyche': 'psyche',
+        # 'Thetis': 'thetis',
+        # 'Melpomene': 'melpomene',
+        # 'Fortuna': 'fortuna',
+        # 'Massalia': 'massalia',
+        # 'Lutetia': 'lutetia',
+        # 'Kalliope': 'kalliope',
+        # 'Thalia': 'thalia',
+        # 'Themis': 'themis',
+        # 'Daphne': 'daphne',
+        # 'Europa': 'europa',
+        # 'Davida': 'davida',
+        # 'Interamnia': 'interamnia'
     }
     visible = []
     for name, key in planet_keys.items():
