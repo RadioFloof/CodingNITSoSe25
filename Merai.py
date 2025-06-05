@@ -51,7 +51,8 @@ def get_visible_objects(lat, lon, user_dt=None):
         t = ts.from_datetime(user_dt)
     else:
         t = ts.now()
-    planets = load('de421.bsp')
+    # Use explicit local path for de421.bsp
+    planets = load('Merai/de421.bsp')
     earth = planets['earth']
     observer = earth + Topos(latitude_degrees=lat, longitude_degrees=lon)
     visible = []
@@ -76,7 +77,7 @@ def get_visible_objects(lat, lon, user_dt=None):
         except Exception:
             continue
     # for Bright stars (Hipparcos, mag < 2.0)
-    with load.open(hipparcos.URL) as f:
+    with load.open('Merai/hip_main.dat') as f:
         stars = hipparcos.load_dataframe(f)
     bright_stars = stars[stars['magnitude'] < 2.0]
     for hip, star_row in bright_stars.iterrows():
@@ -260,7 +261,7 @@ def main():
             if hip_match:
                 hip_num = int(hip_match.group(1))
                 try:
-                    with load.open(hipparcos.URL) as f:
+                    with load.open('Merai/hip_main.dat') as f:
                         stars = hipparcos.load_dataframe(f)
                     star_row = stars.loc[hip_num]
                     if 'constellation' in star_row and isinstance(star_row['constellation'], str):
@@ -338,7 +339,7 @@ def main():
             if hip_match:
                 hip_num = int(hip_match.group(1))
                 try:
-                    with load.open(hipparcos.URL) as f:
+                    with load.open('Merai/hip_main.dat') as f:
                         stars = hipparcos.load_dataframe(f)
                     star_row = stars.loc[hip_num]
                     if 'constellation' in star_row and isinstance(star_row['constellation'], str):
