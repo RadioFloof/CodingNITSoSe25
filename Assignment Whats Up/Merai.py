@@ -248,6 +248,32 @@ def main():
     # --- Table ---
     table_data = []
     for obj in filtered:
+        # Always show constellation if available, and try to extract from star_row if missing
+        constellation = obj.get('constellation', '')
+        if not constellation and 'Constellation:' in obj['name']:
+            match = re.search(r"Constellation: ([^|]+)", obj['name'])
+            if match:
+                constellation = match.group(1).strip()
+        # For stars, also try to extract from raw_name if missing
+        if obj['type'] == 'Star' and not constellation:
+            hip_match = re.search(r"HIP (\d+)", obj['raw_name']) if 'raw_name' in obj else None
+            if hip_match:
+                hip_num = int(hip_match.group(1))
+                try:
+                    with load.open(hipparcos.URL) as f:
+                        stars = hipparcos.load_dataframe(f)
+                    star_row = stars.loc[hip_num]
+                    if 'constellation' in star_row and isinstance(star_row['constellation'], str):
+                        constellation = star_row['constellation']
+                except Exception:
+                    pass
+        # Try to extract constellation from Wikipedia description if still missing
+        if not constellation:
+            desc = get_object_description(obj['name'])
+            if desc:
+                match = re.search(r"constellation ([A-Za-z ]+)[,\.]", desc, re.IGNORECASE)
+                if match:
+                    constellation = match.group(1).strip()
         if obj['type'] == 'Star':
             hip_match = re.search(r"HIP (\d+)", obj['name'])
             hip_name = f"HIP {hip_match.group(1)}" if hip_match else obj['name']
@@ -257,13 +283,6 @@ def main():
                 display_name = f"{common_name} ({hip_name}) (Star)"
             else:
                 display_name = f"{hip_name} ({hip_name}) (Star)"
-            # Always show constellation if available
-            constellation = obj.get('constellation', '')
-            if not constellation and 'Constellation:' in obj['name']:
-                # Try to extract from name string if present
-                match = re.search(r"Constellation: ([^|]+)", obj['name'])
-                if match:
-                    constellation = match.group(1).strip()
             table_data.append({
                 'Name': display_name,
                 'Type': obj['type'],
@@ -272,11 +291,6 @@ def main():
                 'Azimuth (°)': obj['azimuth']
             })
         else:
-            constellation = obj.get('constellation', '')
-            if not constellation and 'Constellation:' in obj['name']:
-                match = re.search(r"Constellation: ([^|]+)", obj['name'])
-                if match:
-                    constellation = match.group(1).strip()
             table_data.append({
                 'Name': f"{obj['name']} ({obj['type']})",
                 'Type': obj['type'],
@@ -313,6 +327,24 @@ def main():
     # --- Details Section ---
     st.header("6. Learn More About Each Object")
     for obj in filtered:
+        # Always show constellation if available, and try to extract from star_row if missing
+        constellation = obj.get('constellation', '')
+        if not constellation and 'Constellation:' in obj['name']:
+            match = re.search(r"Constellation: ([^|]+)", obj['name'])
+            if match:
+                constellation = match.group(1).strip()
+        if obj['type'] == 'Star' and not constellation:
+            hip_match = re.search(r"HIP (\d+)", obj['raw_name']) if 'raw_name' in obj else None
+            if hip_match:
+                hip_num = int(hip_match.group(1))
+                try:
+                    with load.open(hipparcos.URL) as f:
+                        stars = hipparcos.load_dataframe(f)
+                    star_row = stars.loc[hip_num]
+                    if 'constellation' in star_row and isinstance(star_row['constellation'], str):
+                        constellation = star_row['constellation']
+                except Exception:
+                    pass
         with st.expander(f"Details: {obj['name']}"):
             if obj['type'] == 'Star':
                 hip_match = re.search(r"HIP (\d+)", obj['name'])
@@ -331,8 +363,7 @@ def main():
                     display_name = f"{hip_name} ({hip_name}) (Star)"
                 st.markdown(f"**Name:** {display_name}")
                 st.markdown(f"**Type:** {obj['type']}")
-                if obj.get('constellation'):
-                    st.markdown(f"**Constellation:** {obj['constellation']}")
+                st.markdown(f"**Constellation:** {constellation if constellation else 'Unknown'}")
                 st.markdown(f"**Altitude:** {obj['altitude']}°")
                 st.markdown(f"**Azimuth:** {obj['azimuth']}°")
                 image_url = None
@@ -367,6 +398,7 @@ def main():
                 st.markdown(f"**Type:** {obj['type']}")
                 st.markdown(f"**Altitude:** {obj['altitude']}°")
                 st.markdown(f"**Azimuth:** {obj['azimuth']}°")
+                st.markdown(f"**Constellation:** {constellation if constellation else 'N/A'}")
                 wiki_name = obj['name']
                 image_url = get_object_image_url(obj['name'])
                 desc = get_object_description(wiki_name)
@@ -381,6 +413,7 @@ def main():
                 st.markdown(f"**Type:** {obj['type']}")
                 st.markdown(f"**Altitude:** {obj['altitude']}°")
                 st.markdown(f"**Azimuth:** {obj['azimuth']}°")
+                st.markdown(f"**Constellation:** {constellation if constellation else 'N/A'}")
                 wiki_name = obj['name'] + " (planet)"
                 image_url = get_object_image_url(wiki_name)
                 desc = get_object_description(wiki_name)
@@ -395,6 +428,7 @@ def main():
                 st.markdown(f"**Type:** {obj['type']}")
                 st.markdown(f"**Altitude:** {obj['altitude']}°")
                 st.markdown(f"**Azimuth:** {obj['azimuth']}°")
+                st.markdown(f"**Constellation:** {constellation if constellation else 'N/A'}")
                 wiki_name = obj['name']
                 image_url = get_object_image_url(wiki_name)
                 desc = get_object_description(wiki_name)
