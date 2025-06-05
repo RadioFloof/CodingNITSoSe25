@@ -176,8 +176,22 @@ def main():
         return
     print("Visible astronomical objects from your location are (sorted by altitude):")
     for obj in visible_objects:
-        extra = f" in {obj['constellation']}" if obj.get('constellation') else ''
-        print(f"- {obj['name']} ({obj['type']}){extra}")
+        if obj['type'] == 'Star':
+            hip_match = re.search(r"HIP (\d+)", obj['name'])
+            hip_name = f"HIP {hip_match.group(1)}" if hip_match else obj['name']
+            # Try to extract common name from obj['name']
+            common_name_match = re.search(r"Common Name: ([^|]+)", obj['name'])
+            common_name = common_name_match.group(1).strip() if common_name_match else None
+            # Only use a real common name: not None, not empty, not starting with 'HIP', and not just digits
+            if common_name and common_name.lower() != 'none' and common_name.strip() and not common_name.lower().startswith('hip') and not common_name.strip().isdigit():
+                display_name = f"{common_name} ({hip_name}) (Star)"
+            else:
+                display_name = f"{hip_name} ({hip_name}) (Star)"
+            extra = f" in {obj['constellation']}" if obj.get('constellation') else ''
+            print(f"- {display_name}{extra}")
+        else:
+            extra = f" in {obj.get('constellation')}" if obj.get('constellation') else ''
+            print(f"- {obj['name']} ({obj['type']}){extra}")
     save = input("\nWould you like to save this list to a file? (yes/no): ").strip().lower()
     if save == 'yes':
         with open('visible_objects.txt', 'w', encoding='utf-8') as f:
@@ -201,8 +215,9 @@ def main():
                     match = re.match(r"([A-Z][a-zA-Z0-9\-]*)[ ,]", desc)
                     if match:
                         common_name = match.group(1)
-            print(f"Name: {hip_name}")
-            print(f"Common Name: {common_name if common_name and common_name != 'None' else 'N/A'}")
+            # Format: Common Name (HIP Number) (Star)
+            display_name = f"{common_name if common_name and common_name != 'None' else hip_name} ({hip_name}) (Star)"
+            print(f"Name: {display_name}")
             print(f"Type: {obj['type']}")
             if obj.get('constellation'):
                 print(f"Constellation: {obj['constellation']}")
@@ -212,7 +227,6 @@ def main():
             image_url = None
             wiki_name = None
             if common_name and common_name != 'N/A' and common_name != 'None':
-                # Try both 'common_name (star)' and 'common_name' for Wikipedia image
                 image_url = get_object_image_url(common_name + " (star)")
                 wiki_name = common_name + " (star)"
                 if not image_url:
@@ -224,7 +238,6 @@ def main():
             if not image_url:
                 image_url = get_object_image_url(hip_name)
                 wiki_name = hip_name
-            # If still not found, try the Bayer designation from Wikipedia description
             if not image_url and desc:
                 bayer_match = re.search(r"designation ([^,\. ]+)", desc, re.IGNORECASE)
                 if bayer_match:
